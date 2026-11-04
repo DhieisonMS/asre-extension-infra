@@ -1,0 +1,16 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "ec2",
+  "title": "Instância EC2",
+  "description": "Solicite uma instância de computação na AWS.",
+  "category": "Computação",
+  "resourceLabel": "Nome da instância",
+  "resourcePlaceholder": "ex.: api-pagamentos",
+  "icon": "compute",
+  "order": 20,
+  "fields": [
+    { "name": "instanceType", "label": "Tipo de instância", "placeholder": "ex.: t3.large", "required": true },
+    { "name": "amiId", "label": "AMI", "placeholder": "ex.: ami-0123456789abcdef0", "required": true },
+    { "name": "volumeSize", "label": "Volume raiz (GB)", "type": "number", "placeholder": "ex.: 50", "required": true }
+  ]
+}

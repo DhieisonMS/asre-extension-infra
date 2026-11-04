@@ -1,0 +1,18 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "lambda",
+  "title": "AWS Lambda",
+  "description": "Solicite uma função serverless na AWS.",
+  "category": "Computação",
+  "resourceLabel": "Nome da função",
+  "resourcePlaceholder": "ex.: processa-pedidos",
+  "icon": "compute",
+  "order": 21,
+  "fields": [
+    { "name": "runtime", "label": "Runtime", "placeholder": "ex.: python3.13 ou nodejs22.x", "required": true },
+    { "name": "handler", "label": "Handler", "placeholder": "ex.: app.handler", "required": true },
+    { "name": "memorySize", "label": "Memória (MB)", "type": "number", "placeholder": "ex.: 256", "required": true },
+    { "name": "timeoutSeconds", "label": "Timeout (segundos)", "type": "number", "placeholder": "ex.: 30", "required": true },
+    { "name": "executionRoleArn", "label": "ARN da execution role", "placeholder": "arn:aws:iam::123456789012:role/...", "required": true }
+  ]
+}

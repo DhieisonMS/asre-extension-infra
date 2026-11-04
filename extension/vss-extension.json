@@ -1,0 +1,56 @@
+{
+  "manifestVersion": 1,
+  "id": "cloudOps2",
+  "version": "1.0.22",
+  "name": "cloudOps2",
+  "description": "Formul\u00e1rios din\u00e2micos que podem iniciar pipelines autorizadas.",
+  "publisher": "cloudops2",
+  "public": false,
+  "targets": [
+    {
+      "id": "Microsoft.VisualStudio.Services"
+    }
+  ],
+  "categories": [
+    "Azure Pipelines"
+  ],
+  "scopes": [
+    "vso.profile",
+    "vso.project",
+    "vso.build_execute",
+    "vso.extension.data",
+    "vso.extension.data_write"
+  ],
+  "contributions": [
+    {
+      "id": "smart-forms-hub",
+      "type": "ms.vss-web.hub",
+      "targets": [
+        "ms.vss-build-web.build-release-hub-group"
+      ],
+      "properties": {
+        "name": "cloudOps",
+        "order": 90,
+        "uri": "dist/index.html"
+      }
+    },
+    {
+      "id": "smart-forms-settings",
+      "type": "ms.vss-web.hub",
+      "targets": [
+        "ms.vss-web.collection-admin-hub-group"
+      ],
+      "properties": {
+        "name": "CloudOps",
+        "order": 90,
+        "uri": "dist/index.html?view=admin"
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "dist",
+      "addressable": true
+    }
+  ]
+}

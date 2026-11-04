@@ -1,0 +1,16 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "redis",
+  "title": "Amazon ElastiCache for Redis OSS",
+  "description": "Solicite um cache Redis gerenciado.",
+  "category": "Dados",
+  "resourceLabel": "Nome do replication group",
+  "resourcePlaceholder": "ex.: cache-sessoes",
+  "icon": "database",
+  "order": 31,
+  "fields": [
+    { "name": "engineVersion", "label": "Versão do Redis OSS", "placeholder": "Versão compatível com a região", "required": true },
+    { "name": "nodeType", "label": "Tipo de nó", "placeholder": "ex.: cache.t4g.small", "required": true },
+    { "name": "nodeCount", "label": "Quantidade de nós", "type": "number", "placeholder": "ex.: 2", "required": true }
+  ]
+}

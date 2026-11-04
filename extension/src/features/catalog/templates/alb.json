@@ -1,0 +1,20 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "alb",
+  "title": "Application Load Balancer",
+  "description": "Crie um balanceador para rotear tráfego da aplicação.",
+  "category": "Rede",
+  "resourceLabel": "Nome do ALB",
+  "resourcePlaceholder": "ex.: api-pagamentos",
+  "icon": "network",
+  "order": 70,
+  "fields": [
+    { "name": "scheme", "label": "Esquema", "type": "select", "required": true, "options": [
+      { "value": "internal", "label": "Interno" },
+      { "value": "internet-facing", "label": "Público" }
+    ] },
+    { "name": "vpcId", "label": "VPC", "placeholder": "ex.: vpc-0123456789abcdef0", "required": true },
+    { "name": "subnetIds", "label": "Subnets", "placeholder": "IDs separados por vírgula", "required": true },
+    { "name": "targetPort", "label": "Porta do target", "type": "number", "placeholder": "ex.: 8080", "required": true }
+  ]
+}

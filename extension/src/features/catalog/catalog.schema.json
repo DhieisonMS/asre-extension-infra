@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cloudops.local/schemas/catalog-template.schema.json",
+  "title": "Template do catálogo cloudOps",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "description",
+    "category",
+    "resourceLabel",
+    "resourcePlaceholder",
+    "icon",
+    "fields"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "category": { "type": "string", "minLength": 1 },
+    "resourceLabel": { "type": "string", "minLength": 1 },
+    "resourcePlaceholder": { "type": "string" },
+    "icon": { "enum": ["kubernetes", "database", "topic", "compute", "network", "security"] },
+    "order": { "type": "integer", "minimum": 0 },
+    "resourceNameTemplate": { "type": "string" },
+    "generatedResourceNameLabel": { "type": "string" },
+    "resourceNameValidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pattern": { "type": "string" },
+        "maxLength": { "type": "integer", "minimum": 1 },
+        "message": { "type": "string" }
+      }
+    },
+    "fields": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/field" }
+    }
+  },
+  "$defs": {
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "label"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]*$" },
+        "label": { "type": "string", "minLength": 1 },
+        "placeholder": { "type": "string" },
+        "type": { "enum": ["text", "number", "textarea", "select"] },
+        "required": { "type": "boolean" },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["value", "label"],
+            "properties": {
+              "value": { "type": "string" },
+              "label": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "select" } }, "required": ["type"] },
+          "then": { "required": ["options"] }
+        }
+      ]
+    }
+  }
+}

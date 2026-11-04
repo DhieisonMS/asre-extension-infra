@@ -1,0 +1,22 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "rds",
+  "title": "Amazon RDS",
+  "description": "Solicite uma instância de banco de dados gerenciada.",
+  "category": "Dados",
+  "resourceLabel": "Identificador da instância",
+  "resourcePlaceholder": "ex.: pedidos-db",
+  "icon": "database",
+  "order": 30,
+  "fields": [
+    { "name": "engine", "label": "Engine", "type": "select", "required": true, "options": [
+      { "value": "postgres", "label": "PostgreSQL" },
+      { "value": "mysql", "label": "MySQL" },
+      { "value": "mariadb", "label": "MariaDB" }
+    ] },
+    { "name": "engineVersion", "label": "Versão do engine", "placeholder": "Versão compatível com a engine", "required": true },
+    { "name": "instanceClass", "label": "Classe da instância", "placeholder": "ex.: db.t4g.medium", "required": true },
+    { "name": "allocatedStorage", "label": "Armazenamento (GB)", "type": "number", "placeholder": "ex.: 100", "required": true },
+    { "name": "databaseName", "label": "Nome inicial do banco", "placeholder": "ex.: appdb", "required": true }
+  ]
+}

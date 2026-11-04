@@ -1,0 +1,37 @@
+{
+  "$schema": "./request-options.schema.json",
+  "defaultEnvironment": "hml",
+  "defaultRegion": "sa-east-1",
+  "accountNames": [
+    "cloudops",
+    "platform",
+    "network",
+    "security",
+    "shared-services",
+    "observability",
+    "data-platform",
+    "analytics",
+    "payments",
+    "commerce",
+    "customer-experience",
+    "identity",
+    "integration",
+    "mobile",
+    "web-apps",
+    "finance",
+    "logging",
+    "backup",
+    "sandbox",
+    "developer-tools"
+  ],
+  "regions": [
+    { "value": "us-east-2", "label": "Ohio (us-east-2)" },
+    { "value": "us-east-1", "label": "Norte da Virgínia (us-east-1)" },
+    { "value": "sa-east-1", "label": "São Paulo (sa-east-1)" }
+  ],
+  "environments": [
+    { "value": "hml", "label": "Homologação (HML)" },
+    { "value": "uat", "label": "Testes de aceite (UAT)" },
+    { "value": "prd", "label": "Produção (PRD)" }
+  ]
+}

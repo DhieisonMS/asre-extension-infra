@@ -1,0 +1,22 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "waf",
+  "title": "AWS WAF Web ACL",
+  "description": "Solicite uma Web ACL para proteger aplicações web.",
+  "category": "Segurança",
+  "resourceLabel": "Nome da Web ACL",
+  "resourcePlaceholder": "ex.: waf-portal",
+  "icon": "security",
+  "order": 81,
+  "fields": [
+    { "name": "scope", "label": "Escopo", "type": "select", "required": true, "options": [
+      { "value": "REGIONAL", "label": "Regional" },
+      { "value": "CLOUDFRONT", "label": "CloudFront" }
+    ] },
+    { "name": "defaultAction", "label": "Ação padrão", "type": "select", "required": true, "options": [
+      { "value": "ALLOW", "label": "Permitir" },
+      { "value": "BLOCK", "label": "Bloquear" }
+    ] },
+    { "name": "managedRuleGroup", "label": "Managed rule group", "placeholder": "ex.: AWSManagedRulesCommonRuleSet", "required": true }
+  ]
+}

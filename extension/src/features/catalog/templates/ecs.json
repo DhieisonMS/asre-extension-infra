@@ -1,0 +1,18 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "ecs",
+  "title": "Serviço ECS",
+  "description": "Solicite um serviço de container no Amazon ECS.",
+  "category": "Computação",
+  "resourceLabel": "Nome do serviço",
+  "resourcePlaceholder": "ex.: api-pagamentos",
+  "icon": "compute",
+  "order": 22,
+  "fields": [
+    { "name": "clusterName", "label": "Cluster ECS", "placeholder": "ex.: producao-apps", "required": true },
+    { "name": "containerImage", "label": "Imagem do container", "placeholder": "ex.: repo/api:1.0.0", "required": true },
+    { "name": "cpu", "label": "CPU (unidades)", "type": "number", "placeholder": "ex.: 512", "required": true },
+    { "name": "memory", "label": "Memória (MB)", "type": "number", "placeholder": "ex.: 1024", "required": true },
+    { "name": "desiredCount", "label": "Quantidade de tasks", "type": "number", "placeholder": "ex.: 2", "required": true }
+  ]
+}

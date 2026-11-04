@@ -1,0 +1,17 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "kafka-topic",
+  "title": "Tópico Kafka",
+  "description": "Crie um tópico em um cluster Kafka existente.",
+  "category": "Mensageria",
+  "resourceLabel": "Nome do tópico",
+  "resourcePlaceholder": "ex.: pagamentos.criado",
+  "icon": "topic",
+  "order": 52,
+  "fields": [
+    { "name": "clusterName", "label": "Cluster Kafka", "placeholder": "Nome do cluster", "required": true },
+    { "name": "partitions", "label": "Partições", "type": "number", "placeholder": "ex.: 6", "required": true },
+    { "name": "replicationFactor", "label": "Fator de replicação", "type": "number", "placeholder": "ex.: 3", "required": true },
+    { "name": "retentionHours", "label": "Retenção (horas)", "type": "number", "placeholder": "ex.: 168", "required": true }
+  ]
+}

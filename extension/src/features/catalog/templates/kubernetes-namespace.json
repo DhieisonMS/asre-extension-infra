@@ -1,0 +1,12 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "kubernetes-namespace",
+  "title": "Namespace Kubernetes",
+  "description": "Crie um namespace com parâmetros padronizados.",
+  "category": "Plataforma",
+  "resourceLabel": "Nome do namespace",
+  "resourcePlaceholder": "ex.: pagamentos",
+  "icon": "kubernetes",
+  "order": 10,
+  "fields": []
+}

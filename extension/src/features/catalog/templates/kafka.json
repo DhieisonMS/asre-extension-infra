@@ -1,0 +1,16 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "kafka",
+  "title": "Cluster Kafka",
+  "description": "Solicite um cluster Kafka para uma aplicação ou domínio.",
+  "category": "Mensageria",
+  "resourceLabel": "Nome do cluster",
+  "resourcePlaceholder": "ex.: pagamentos-eventos",
+  "icon": "database",
+  "order": 51,
+  "fields": [
+    { "name": "kafkaVersion", "label": "Versão do Kafka", "placeholder": "ex.: 3.7.0", "required": true },
+    { "name": "brokerCount", "label": "Quantidade de brokers", "type": "number", "placeholder": "ex.: 3", "required": true },
+    { "name": "instanceType", "label": "Tipo de instância", "placeholder": "ex.: kafka.m7g.large", "required": true }
+  ]
+}

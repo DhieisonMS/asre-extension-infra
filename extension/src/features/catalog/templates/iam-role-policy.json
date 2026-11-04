@@ -1,0 +1,15 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "iam-role-policy",
+  "title": "Role e policy IAM",
+  "description": "Solicite uma role e a policy de acesso associada.",
+  "category": "Segurança",
+  "resourceLabel": "Nome da role",
+  "resourcePlaceholder": "ex.: app-pagamentos",
+  "icon": "security",
+  "order": 80,
+  "fields": [
+    { "name": "policyName", "label": "Nome da policy", "placeholder": "ex.: app-pagamentos-access", "required": true },
+    { "name": "policyDocument", "label": "Documento da policy (JSON)", "type": "textarea", "placeholder": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": []\n}", "required": true }
+  ]
+}

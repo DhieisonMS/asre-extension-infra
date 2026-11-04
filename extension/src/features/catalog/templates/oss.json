@@ -1,0 +1,17 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "oss",
+  "title": "Amazon OpenSearch Service",
+  "description": "Solicite um domínio gerenciado do Amazon OpenSearch Service.",
+  "category": "Busca e observabilidade",
+  "resourceLabel": "Nome do domínio",
+  "resourcePlaceholder": "ex.: busca-aplicacoes",
+  "icon": "database",
+  "order": 60,
+  "fields": [
+    { "name": "engineVersion", "label": "Versão do OpenSearch", "placeholder": "ex.: OpenSearch_2.19", "required": true },
+    { "name": "dataNodeInstanceType", "label": "Tipo de instância dos data nodes", "placeholder": "ex.: r6g.large.search", "required": true },
+    { "name": "dataNodeCount", "label": "Quantidade de data nodes", "type": "number", "placeholder": "ex.: 3", "required": true },
+    { "name": "volumeSize", "label": "Volume por data node (GB)", "type": "number", "placeholder": "ex.: 100", "required": true }
+  ]
+}

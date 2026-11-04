@@ -1,0 +1,23 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "mq",
+  "title": "Amazon MQ",
+  "description": "Solicite um broker gerenciado ActiveMQ ou RabbitMQ.",
+  "category": "Mensageria",
+  "resourceLabel": "Nome do broker",
+  "resourcePlaceholder": "ex.: integracao-pedidos",
+  "icon": "database",
+  "order": 53,
+  "fields": [
+    { "name": "engineType", "label": "Engine", "type": "select", "required": true, "options": [
+      { "value": "ActiveMQ", "label": "ActiveMQ" },
+      { "value": "RabbitMQ", "label": "RabbitMQ" }
+    ] },
+    { "name": "engineVersion", "label": "Versão do engine", "placeholder": "Versão compatível com a engine escolhida", "required": true },
+    { "name": "brokerInstanceType", "label": "Tipo de instância", "placeholder": "ex.: mq.m5.large", "required": true },
+    { "name": "deploymentMode", "label": "Modo de implantação", "type": "select", "required": true, "options": [
+      { "value": "SINGLE_INSTANCE", "label": "Instância única" },
+      { "value": "ACTIVE_STANDBY_MULTI_AZ", "label": "Alta disponibilidade Multi-AZ" }
+    ] }
+  ]
+}

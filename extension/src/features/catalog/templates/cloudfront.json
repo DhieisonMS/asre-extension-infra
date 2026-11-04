@@ -1,0 +1,20 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "cloudfront",
+  "title": "Distribuição CloudFront",
+  "description": "Crie uma distribuição para publicar conteúdo com baixa latência.",
+  "category": "Rede",
+  "resourceLabel": "Identificador da distribuição",
+  "resourcePlaceholder": "ex.: portal-publico",
+  "icon": "network",
+  "order": 71,
+  "fields": [
+    { "name": "originDomain", "label": "Domínio de origem", "placeholder": "ex.: bucket.s3.amazonaws.com", "required": true },
+    { "name": "priceClass", "label": "Classe de preço", "type": "select", "required": true, "options": [
+      { "value": "PriceClass_100", "label": "PriceClass_100" },
+      { "value": "PriceClass_200", "label": "PriceClass_200" },
+      { "value": "PriceClass_All", "label": "PriceClass_All" }
+    ] },
+    { "name": "alternateDomain", "label": "Domínio alternativo", "placeholder": "opcional: cdn.exemplo.com" }
+  ]
+}

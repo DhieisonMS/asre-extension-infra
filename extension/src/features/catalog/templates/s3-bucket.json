@@ -1,0 +1,19 @@
+{
+  "$schema": "../catalog.schema.json",
+  "id": "s3-bucket",
+  "title": "Bucket S3",
+  "description": "Crie um bucket com configurações padronizadas.",
+  "category": "Armazenamento",
+  "resourceLabel": "Nome do repositório",
+  "resourcePlaceholder": "ex.: pagamentos-api",
+  "generatedResourceNameLabel": "Nome final do bucket",
+  "resourceNameTemplate": "{resourceName}-s3-{environment}",
+  "resourceNameValidation": {
+    "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$",
+    "maxLength": 56,
+    "message": "Use letras minúsculas, números e hífens; até 56 caracteres."
+  },
+  "icon": "database",
+  "order": 40,
+  "fields": []
+}
