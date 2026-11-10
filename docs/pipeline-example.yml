@@ -1,0 +1,173 @@
+# Exemplo de pipeline construtora para um repositório de infraestrutura Azure Repos.
+# Configure as permissões, os templates e a autenticação AWS antes de habilitar o apply.
+trigger: none
+pr: none
+
+parameters:
+  - name: requestJson
+    type: string
+    default: '{}'
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: APPS/APPS-templates
+      ref: refs/heads/main
+
+stages:
+  - stage: PrepareAndPlan
+    displayName: Validar, criar branch e executar plan
+    jobs:
+      - job: CreateBranchAndPlan
+        displayName: Gerar estrutura e executar Terraform plan
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            path: self
+            persistCredentials: true
+            displayName: Checkout do repositório de infraestrutura
+
+          - checkout: templates
+            path: templates
+            displayName: Checkout de templates CloudHub
+
+          - bash: |
+              set -Eeuo pipefail
+
+              print_request() {
+                local compact
+                if compact="$(jq -c . <<< "$REQUEST_JSON" 2>/dev/null)"; then
+                  printf 'REQUEST_JSON=%s\n' "$compact" >&2
+                else
+                  printf 'REQUEST_JSON_SHELL_ESCAPED=' >&2
+                  printf '%q\n' "$REQUEST_JSON" >&2
+                fi
+              }
+              fail() {
+                printf '##[error]%s\n' "$1" >&2
+                print_request
+                exit 1
+              }
+              trap 'status=$?; trap - ERR; printf "##[error]Falha inesperada (exit %s).\n" "$status" >&2; print_request; exit "$status"' ERR
+
+              jq -e 'type == "object" and (has("parameters") | not)' >/dev/null <<< "$REQUEST_JSON" \
+                || fail "requestJson inválido ou contém o objeto parameters; envie os campos do recurso diretamente na raiz."
+
+              provider="$(jq -er '.provider | select(type == "string")' <<< "$REQUEST_JSON")" || fail "provider inválido."
+              [[ "$provider" == "aws" ]] || fail "Esta pipeline construtora está habilitada somente para AWS."
+              jq -e '.schemaVersion == 1' >/dev/null <<< "$REQUEST_JSON" || fail "schemaVersion não suportado."
+
+              template_id="$(jq -er '.templateId | select(type == "string" and test("^[a-z0-9]+(-[a-z0-9]+)*$"))' <<< "$REQUEST_JSON")" || fail "templateId inválido."
+              resource_type="$(jq -er '.resourceType | select(type == "string" and test("^[a-z0-9]+(-[a-z0-9]+)*$"))' <<< "$REQUEST_JSON")" || fail "resourceType inválido."
+              [[ "$template_id" == "$resource_type" ]] || fail "templateId e resourceType precisam corresponder."
+              account_domain="$(jq -er '.accountDomain | select(type == "string" and test("^[a-z0-9]+(-[a-z0-9]+)*$"))' <<< "$REQUEST_JSON")" || fail "accountDomain inválido."
+              environment="$(jq -er '.environment | select(type == "string" and (. == "hml" or . == "uat" or . == "prd"))' <<< "$REQUEST_JSON")" || fail "environment inválido."
+              account_name="$(jq -er '.accountAwsName | select(type == "string" and test("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"))' <<< "$REQUEST_JSON")" || fail "accountAwsName inválido."
+              resource_name="$(jq -er '.resourceName | select(type == "string" and test("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"))' <<< "$REQUEST_JSON")" || fail "resourceName inválido."
+              region="$(jq -er '.region | select(type == "string" and length > 0)' <<< "$REQUEST_JSON")" || fail "region inválida."
+              jq -e '.justification | type == "string" and length > 0' >/dev/null <<< "$REQUEST_JSON" || fail "justification obrigatória."
+              jq -e '.subnets | type == "array" and length > 0 and all(.[]; type == "string")' >/dev/null <<< "$REQUEST_JSON" || fail "subnets precisa ser um array não vazio de strings."
+
+              template_root="$PIPELINE_WORKSPACE/templates/aws/$resource_type"
+              parameters_file="$template_root/parameters.json"
+              terragrunt_source="$template_root/terragrunt.hcl"
+              [[ -f "$parameters_file" ]] || fail "Formulário do template não encontrado: aws/$resource_type/parameters.json."
+              [[ -f "$terragrunt_source" ]] || fail "Template Terragrunt não encontrado: aws/$resource_type/terragrunt.hcl."
+              jq -e --arg id "$resource_type" '.provider == "aws" and .id == $id and (.fields | type == "array")' "$parameters_file" >/dev/null \
+                || fail "parameters.json não corresponde ao provedor e resourceType solicitados."
+
+              while IFS= read -r field_name; do
+                [[ "$field_name" == "subnetIds" ]] && field_name="subnets"
+                jq -e --arg field "$field_name" '.[$field] != null and .[$field] != ""' >/dev/null <<< "$REQUEST_JSON" \
+                  || fail "Campo obrigatório ausente no requestJson: $field_name."
+              done < <(jq -r '.fields[] | select(.required == true) | .name' "$parameters_file")
+
+              config_file="$PIPELINE_WORKSPACE/templates/aws/globalConfig.json"
+              [[ -f "$config_file" ]] || fail "aws/globalConfig.json não encontrado no repositório de templates."
+              domain_json="$(jq -ce --arg domain "$account_domain" '[.domains[] | select(.accountName == $domain)] | select(length == 1) | .[0]' "$config_file")" \
+                || fail "Domínio AWS não configurado em globalConfig.json."
+              account_config="$(jq -ce --arg env "$environment" '.environments[$env] | select(type == "object")' <<< "$domain_json")" \
+                || fail "Ambiente AWS não configurado para o domínio solicitado."
+
+              configured_account="$(jq -er '.accountName' <<< "$domain_json")"
+              [[ "$account_name" == "${configured_account}-${environment}" ]] || fail "accountAwsName não corresponde ao domínio e ambiente configurados."
+              requested_account_id="$(jq -er '.accountAwsId | select(type == "string")' <<< "$REQUEST_JSON")" || fail "accountAwsId inválido."
+              configured_account_id="$(jq -er '.accountId | select(type == "string")' <<< "$account_config")" || fail "accountId inválido em globalConfig.json."
+              [[ "$requested_account_id" == "$configured_account_id" ]] || fail "accountAwsId não corresponde ao globalConfig.json."
+              requested_vpc="$(jq -er '.vpcId | select(type == "string")' <<< "$REQUEST_JSON")" || fail "vpcId inválido."
+              configured_vpc="$(jq -er '.vpcId | select(type == "string")' <<< "$account_config")" || fail "vpcId inválido em globalConfig.json."
+              [[ "$requested_vpc" == "$configured_vpc" ]] || fail "vpcId não corresponde ao globalConfig.json."
+              jq -e --arg region "$region" '.regions | type == "array" and index($region) != null' <<< "$account_config" >/dev/null \
+                || fail "A região solicitada não está habilitada para esta conta e ambiente."
+              configured_subnets="$(jq -ce '.subnets | select(type == "array" and all(.[]; type == "string"))' <<< "$account_config")" \
+                || fail "subnets inválidas em globalConfig.json."
+              jq -e --argjson configured "$configured_subnets" '
+                .subnets as $requested
+                | ($requested | length) == ($requested | unique | length)
+                and all($requested[]; . as $subnet | ($configured | index($subnet)) != null)
+              ' <<< "$REQUEST_JSON" >/dev/null || fail "Uma ou mais subnets não estão configuradas para esta conta AWS."
+
+              name_slug="$(printf '%s' "$resource_name" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g')"
+              [[ -n "$name_slug" ]] || fail "resourceName não pode ser convertido em nome de branch."
+              branch="feature/$(date +%Y%m)/add-${resource_type}-${name_slug}-${environment}"
+              target_relative="aws/$account_domain/$resource_type/$resource_name"
+              self_repo="$PIPELINE_WORKSPACE/self"
+
+              printf '%s\n' "Solicitação validada:"
+              printf 'Template: %s\n' "$template_id"
+              printf 'Ambiente: %s\n' "$environment"
+              printf 'Conta AWS: %s\n' "$account_name"
+              printf 'Região AWS: %s\n' "$region"
+              printf 'Tipo de recurso: %s\n' "$resource_type"
+              printf 'Nome do recurso: %s\n' "$resource_name"
+              printf 'Destino: %s\n' "$target_relative"
+              printf 'Branch: %s\n' "$branch"
+
+              git -C "$self_repo" fetch origin main
+              if git -C "$self_repo" cat-file -e "origin/main:$target_relative" 2>/dev/null; then
+                fail "A estrutura já existe em main: $target_relative."
+              fi
+              if git -C "$self_repo" ls-remote --exit-code --heads origin "refs/heads/$branch" >/dev/null 2>&1; then
+                fail "A branch já existe no repositório: $branch."
+              fi
+
+              git -C "$self_repo" checkout -b "$branch" origin/main
+              mkdir -p "$self_repo/$target_relative/env"
+              cp "$terragrunt_source" "$self_repo/$target_relative/terragrunt.hcl"
+              jq -e 'del(.provider, .resourceType, .schemaVersion, .templateId, .accountDomain) | all(keys[]; test("^[A-Za-z_][A-Za-z0-9_-]*$"))' \
+                >/dev/null <<< "$REQUEST_JSON" || fail "O request contém uma chave inválida para tfvars."
+              jq -r '
+                def hcl:
+                  if type == "object" then
+                    "{ " + ([to_entries[] | "\(.key | tojson) = \(.value | hcl)"] | join(", ")) + " }"
+                  elif type == "array" then
+                    "[ " + ([.[] | hcl] | join(", ")) + " ]"
+                  else tojson
+                  end;
+                del(.provider, .resourceType, .schemaVersion, .templateId, .accountDomain)
+                | to_entries[]
+                | "\(.key) = \(.value | hcl)"
+              ' \
+                <<< "$REQUEST_JSON" > "$self_repo/$target_relative/env/$environment.tfvars"
+
+              git -C "$self_repo" config user.name "Azure Pipelines"
+              git -C "$self_repo" config user.email "azure-pipelines@localhost"
+              git -C "$self_repo" add -- "$target_relative"
+              git -C "$self_repo" commit -m "feat: add ${resource_type} ${resource_name} for ${environment}"
+              planned_commit="$(git -C "$self_repo" rev-parse HEAD)"
+              git -C "$self_repo" push origin "HEAD:refs/heads/$branch"
+
+              plan_directory="$ARTIFACT_STAGING/terraform-plan"
+              mkdir -p "$plan_directory"
+              plan_file="$plan_directory/tfplan"
+              cd "$self_repo/$target_relative"
+
+              printf '##vso[task.setvariable variable=featureBranch;isOutput=true]%s\n' "$branch"
+              printf '##vso[task.setvariable variable=plannedCommit;isOutput=true]%s\n' "$planned_commit"
+            name: prepare
+            displayName: Validar request, criar arquivos, push da branch e executar plan
+            env:
+              REQUEST_JSON: ${{ parameters.requestJson }}
+              PIPELINE_WORKSPACE: $(Pipeline.Workspace)
+              ARTIFACT_STAGING: $(Build.ArtifactStagingDirectory)

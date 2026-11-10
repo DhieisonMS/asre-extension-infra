@@ -1,8 +1,8 @@
 {
   "manifestVersion": 1,
-  "id": "cloudOps2",
-  "version": "1.0.22",
-  "name": "cloudOps2",
+  "id": "cloudHub",
+  "version": "1.0.6",
+  "name": "CloudHub",
   "description": "Formul\u00e1rios din\u00e2micos que podem iniciar pipelines autorizadas.",
   "publisher": "cloudops2",
   "public": false,
@@ -17,6 +17,7 @@
   "scopes": [
     "vso.profile",
     "vso.project",
+    "vso.code",
     "vso.build_execute",
     "vso.extension.data",
     "vso.extension.data_write"
@@ -29,7 +30,7 @@
         "ms.vss-build-web.build-release-hub-group"
       ],
       "properties": {
-        "name": "cloudOps",
+        "name": "CloudHub",
         "order": 90,
         "uri": "dist/index.html"
       }
@@ -41,7 +42,7 @@
         "ms.vss-web.collection-admin-hub-group"
       ],
       "properties": {
-        "name": "CloudOps",
+        "name": "CloudHub",
         "order": 90,
         "uri": "dist/index.html?view=admin"
       }

@@ -1,4 +1,5 @@
 import { MessageBar, MessageBarBody, Spinner, Title1 } from '@fluentui/react-components';
+import { ShieldCheckmark24Regular } from '@fluentui/react-icons';
 import { AdministrationPage } from '../features/administration/AdministrationPage';
 import { pipelineFromUrl } from '../features/catalog/catalog';
 import { RequestPage } from '../features/requests/RequestPage';
@@ -32,10 +33,16 @@ export default function CloudOpsApp({ adoContext }: { adoContext: AdoContext }) 
     <main className={styles.page}>
       <header className={styles.header}>
         <div>
-          <Title1>cloudOps</Title1>
+          <Title1>CloudHub</Title1>
           <p className={styles.subtitle}>Solicite recursos de nuvem. Escolha um serviço do catálogo e informe os parâmetros para iniciar a pipeline.</p>
         </div>
-        <div className="status-pill"><span className="status-dot" /> Sem backend próprio</div>
+        <div className={styles.userBadge}>
+          <ShieldCheckmark24Regular className={styles.userBadgeIcon} />
+          <div className={styles.userBadgeDetails}>
+            <strong>{adoContext.userName || 'Usuário autenticado'}</strong>
+            <span className={styles.muted}>{adoContext.organization || 'Azure DevOps'}</span>
+          </div>
+        </div>
       </header>
 
       {error && <MessageBar intent="error"><MessageBarBody>{error}</MessageBarBody></MessageBar>}
@@ -52,10 +59,10 @@ export default function CloudOpsApp({ adoContext }: { adoContext: AdoContext }) 
           onSave={() => void persistConfig()}
         />
           : adoContext.projectId && !currentProjectEnabled ? <section className={styles.card}>
-            <Title1 as="h2" className={styles.cardTitle}>cloudOps não habilitado</Title1>
-            <MessageBar intent="warning"><MessageBarBody>O uso da extensão não foi habilitado para {adoContext.project || 'este projeto'}. Um administrador pode habilitá-lo em Organization settings &gt; CloudOps.</MessageBarBody></MessageBar>
+            <Title1 as="h2" className={styles.cardTitle}>CloudHub não habilitado</Title1>
+            <MessageBar intent="warning"><MessageBarBody>O uso da extensão não foi habilitado para {adoContext.project || 'este projeto'}. Um administrador pode habilitá-lo em Organization settings &gt; CloudHub.</MessageBarBody></MessageBar>
           </section>
-            : <RequestPage adoContext={adoContext} enabledProjects={enabledProjects} pipeline={pipeline} />}
+            : <RequestPage enabledProjects={enabledProjects} pipeline={pipeline} />}
 
       <p className={styles.muted}>As opções e validações do formulário melhoram a experiência, mas não substituem as permissões, aprovações, checks de ambiente e restrições de service connections configuradas no Azure DevOps.</p>
     </main>

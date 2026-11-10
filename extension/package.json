@@ -1,7 +1,7 @@
 {
-  "name": "smart-forms-ado-extension",
+  "name": "asre-extension-infra",
   "private": true,
-  "version": "1.0.22",
+  "version": "1.0.6",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -10,19 +10,19 @@
     "package": "npm run build && tfx extension create --manifest-globs vss-extension.json"
   },
   "dependencies": {
-    "azure-devops-extension-sdk": "^4.2.0",
     "@fluentui/react-components": "^9.68.0",
     "@fluentui/react-icons": "^2.0.303",
+    "azure-devops-extension-api": "^4.263.0",
+    "azure-devops-extension-sdk": "^4.2.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "azure-devops-extension-api": "^4.263.0"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "tfx-cli": "^0.24.2",
     "typescript": "^5.7.2",
-    "vite": "^6.0.5",
-    "tfx-cli": "^0.24.2"
+    "vite": "^6.0.5"
   }
 }

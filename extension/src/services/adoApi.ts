@@ -5,6 +5,8 @@ export type AdoPipeline = { id: number; name: string; folder?: string; url?: str
 export type PipelineRun = { id: number; name?: string; state?: string; result?: string; url?: string; _links?: { web?: { href?: string } } };
 
 type AdoList<T> = { value: T[]; count?: number };
+type GitItem = { path: string; isFolder?: boolean };
+type GitItemList = { value: GitItem[]; count?: number };
 
 function organizationUrl(): string {
   const name = SDK.getHost()?.name;
@@ -13,6 +15,11 @@ function organizationUrl(): string {
 }
 
 async function adoFetch<T>(url: string, init: RequestInit = {}): Promise<T> {
+  const response = await adoRequest(url, init);
+  return response.json() as Promise<T>;
+}
+
+async function adoRequest(url: string, init: RequestInit = {}): Promise<Response> {
   const token = await SDK.getAccessToken();
   const response = await fetch(url, {
     ...init,
@@ -37,7 +44,7 @@ async function adoFetch<T>(url: string, init: RequestInit = {}): Promise<T> {
       : '';
     throw new Error(`Azure DevOps retornou ${response.status}${detail ? `: ${detail.slice(0, 300)}` : '.'}${hint}`);
   }
-  return response.json() as Promise<T>;
+  return response;
 }
 
 export async function listProjects(): Promise<AdoProject[]> {
@@ -52,24 +59,63 @@ export async function listPipelines(projectId: string): Promise<AdoPipeline[]> {
   return (result.value ?? []).sort((a, b) => a.name.localeCompare(b.name));
 }
 
+export async function listTemplateFolders(providerFolder: string): Promise<{ path: string; name: string }[]> {
+  const query = new URLSearchParams({
+    scopePath: `/${providerFolder}`,
+    recursionLevel: 'OneLevel',
+    includeContentMetadata: 'true',
+    'versionDescriptor.version': 'main',
+    'versionDescriptor.versionType': 'branch',
+    'api-version': '7.1',
+  });
+  const url = `${organizationUrl()}/APPS/_apis/git/repositories/APPS-templates/items?${query}`;
+  const result = await adoFetch<GitItemList | GitItem[]>(url);
+  const items = Array.isArray(result) ? result : result.value;
+  const parentSegments = providerFolder.split('/').filter(Boolean);
+  return items.flatMap((item) => {
+    if (!item.isFolder) return [];
+    const segments = item.path.split('/').filter(Boolean);
+    if (segments.length !== parentSegments.length + 1
+      || !parentSegments.every((segment, index) => segments[index] === segment)) return [];
+
+    const name = segments[segments.length - 1];
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name)) return [];
+    return [{ path: `/${segments.join('/')}`, name }];
+  })
+    .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+export async function readTemplateFile(path: string): Promise<string> {
+  const query = new URLSearchParams({
+    path,
+    includeContent: 'true',
+    'versionDescriptor.version': 'main',
+    'versionDescriptor.versionType': 'branch',
+    'api-version': '7.1',
+  });
+  const url = `${organizationUrl()}/APPS/_apis/git/repositories/APPS-templates/items?${query}`;
+  const response = await adoRequest(url);
+  const body = await response.text();
+  try {
+    const item = JSON.parse(body) as { path?: unknown; content?: unknown };
+    if (typeof item.path === 'string' && typeof item.content === 'string') return item.content;
+  } catch {
+    return body;
+  }
+  return body;
+}
+
 export async function runPipeline(
   projectId: string,
   pipelineId: number,
-  parameters: { template: string; environment: string; resourceName: string; justification: string; region?: string; additionalParameters: Record<string, string> },
+  requestJson: string,
 ): Promise<PipelineRun> {
   const url = `${organizationUrl()}/${encodeURIComponent(projectId)}/_apis/pipelines/${pipelineId}/runs?api-version=7.1`;
   return adoFetch<PipelineRun>(url, {
     method: 'POST',
     body: JSON.stringify({
       templateParameters: {
-        accountAwsName: parameters.additionalParameters.accountAwsName,
-        region: parameters.region ?? '',
-        template: parameters.template,
-        environment: parameters.environment,
-        resourceName: parameters.resourceName,
-        justification: parameters.justification,
-        ...Object.fromEntries(Object.entries(parameters.additionalParameters)
-          .filter(([key, value]) => key !== 'accountAwsName' && value.trim())),
+        requestJson,
       },
     }),
   });

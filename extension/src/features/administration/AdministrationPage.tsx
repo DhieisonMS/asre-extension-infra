@@ -33,7 +33,7 @@ export function AdministrationPage({
   return <>
     <section className={styles.card}>
       <Title1 as="h2" className={styles.cardTitle}>1. Projetos autorizados</Title1>
-      <p className={styles.subtitle}>Defina em quais projetos os usuários poderão solicitar recursos pelo cloudOps.</p>
+      <p className={styles.subtitle}>Defina em quais projetos os usuários poderão solicitar recursos pelo CloudHub.</p>
       {projects.length === 0 ? <MessageBar intent="warning"><MessageBarBody>Nenhum projeto foi retornado pela API. Verifique o acesso da sua conta e o escopo vso.project.</MessageBarBody></MessageBar> : <>
         <Field label="Filtrar projetos">
           <Input value={projectSearch} onChange={(_, data) => setProjectSearch(data.value)} placeholder="Buscar pelo nome do projeto" className={styles.full} />
